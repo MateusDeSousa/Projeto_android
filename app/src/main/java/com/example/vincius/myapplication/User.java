@@ -7,13 +7,13 @@ public class User {
     private final String profileUrl;
 
 
-    public User(String uuid, String username, String profileUrl) {
-        this.uid = uuid;
+    public User(String uid, String username, String profileUrl) {
+        this.uid = uid;
         this.username = username;
         this.profileUrl = profileUrl;
     }
 
-    public String getUuid() {
+    public String getUid() {
         return uid;
     }
 

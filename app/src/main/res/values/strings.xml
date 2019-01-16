@@ -6,8 +6,7 @@
     <string name="action_settings">LOGIN</string>
     <string name="voltar">Voltar</string>
     <string name="Login">login</string>
-    <string name="teste_para_login_2_0">teste para login 2.0</string>
-    <string name="registrar">registrar</string>
+        <string name="registrar">registrar</string>
     <string name="none" />
     <string name="cliqueAqui">Não tem uma conta? Crie aqui!</string>
     <string name="Enter">Entrar</string>

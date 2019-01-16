@@ -11,16 +11,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class ActivityLogin extends AppCompatActivity {
+
     private TextView textRegister;
     private EditText editEmail, editSenha;
     private Button btlogin;
-    private FirebaseAuth auth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,7 @@ public class ActivityLogin extends AppCompatActivity {
             alert("Login e senha devem ser preechidos");
             return;
         }
-        auth.signInWithEmailAndPassword(email, senha)
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, senha)
                .addOnCompleteListener(ActivityLogin.this, new OnCompleteListener<AuthResult>() {
                    @Override
                    public void onComplete(@NonNull Task<AuthResult> task) {
@@ -71,12 +71,6 @@ public class ActivityLogin extends AppCompatActivity {
 
     private void alert(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        auth = Connect.getFirebaseAuth();
     }
 
     private void startComponents() {

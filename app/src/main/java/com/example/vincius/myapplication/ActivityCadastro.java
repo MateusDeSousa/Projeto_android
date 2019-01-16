@@ -34,12 +34,10 @@ import java.util.UUID;
 
 public class ActivityCadastro extends AppCompatActivity {
 
-    private FirebaseAuth auth;
     private EditText editEmail, editSenha, editUsername;
-    private Button btcadastrar, btSelectPhoto;
+    private Button btnCadastrar, btnSelectPhoto;
     private ImageView img_photo;
-    private Uri uri_img_photo = null;
-
+    private Uri selectedUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,14 +45,14 @@ public class ActivityCadastro extends AppCompatActivity {
         setContentView(R.layout.activity_cadastro);
         startComponents();
 
-        btSelectPhoto.setOnClickListener(new View.OnClickListener() {
+        btnSelectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 selecionarFoto();
             }
         });
 
-        btcadastrar.setOnClickListener(new View.OnClickListener() {
+        btnCadastrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String email = editEmail.getText().toString();
@@ -72,15 +70,15 @@ public class ActivityCadastro extends AppCompatActivity {
 
         if(resultCode == RESULT_OK) {
             if (data.getData() != null) {
-                uri_img_photo = data.getData();
+                selectedUri = data.getData();
         }else{
             finish();
         }
             Bitmap bitmap = null;
                 try {
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri_img_photo);
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedUri);
                     img_photo.setImageDrawable(new BitmapDrawable(bitmap));
-                    btSelectPhoto.setAlpha(0);
+                    btnSelectPhoto.setAlpha(0);
                 } catch (IOException e) {
                     finish();
                 }
@@ -97,29 +95,32 @@ public class ActivityCadastro extends AppCompatActivity {
             alert("Nome, senha e email  devem ser preenchidos!");
             return;
         }
-        if (uri_img_photo == null){
+        if (selectedUri == null){
             alert("Coloque uma foto de Perfil!");
             return;
         }
-            auth.createUserWithEmailAndPassword(email, senha)
-                    .addOnCompleteListener(ActivityCadastro.this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                alert("Usuario cadastrado com sucesso!");
-                                salvarUserInFirebase();
-                            } else {
-                                alert("erro de cadastro!");
-                            }
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,senha)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()){
+                            Log.i("teste", task.getResult().getUser().getUid());
+                            salvarUserInFirebase();
                         }
-                    });
-        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("teste", e.getMessage());
+                    }
+                });
+    }
 
     private void salvarUserInFirebase() {
         String filename = UUID.randomUUID().toString();
         final StorageReference ref = FirebaseStorage.getInstance().getReference("/images/" + filename);
-
-        ref.putFile(uri_img_photo)
+        ref.putFile(selectedUri)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -131,8 +132,11 @@ public class ActivityCadastro extends AppCompatActivity {
                                String uid = FirebaseAuth.getInstance().getUid();
                                String username = editUsername.getText().toString();
                                String profileUrl = uri.toString();
-                               User user =  new User(uid, username,profileUrl);
 
+                               User user =  new User(uid,username,profileUrl);
+                                if (uid == null){
+                                    alert("algo de errado nao esta certo!");
+                                }
                                 FirebaseFirestore.getInstance().collection("users")
                                         .add(user)
                                         .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
@@ -145,8 +149,10 @@ public class ActivityCadastro extends AppCompatActivity {
                                             @Override
                                             public void onFailure(@NonNull Exception e) {
                                                 Log.i("teste", e.getMessage());
+
                                             }
                                         });
+
                             }
                         });
                     }
@@ -165,18 +171,14 @@ public class ActivityCadastro extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        auth = Connect.getFirebaseAuth();
-    }
 
     private void startComponents() {
         editUsername = findViewById(R.id.viewEditUsername2);
         editEmail = findViewById(R.id.viewEditEmail2);
         editSenha = findViewById(R.id.viewEditSenha2);
-        btcadastrar = findViewById(R.id.btcadastrar);
-        btSelectPhoto = findViewById(R.id.btphoto);
+        btnCadastrar = findViewById(R.id.btcadastrar);
+        btnSelectPhoto = findViewById(R.id.btphoto);
         img_photo = findViewById(R.id.img_photo);
+
     }
 }
